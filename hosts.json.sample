@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "name": "Sample Host",
+    "mac_address": "00:11:22:33:44:55",
+    "broadcast_ip": "255.255.255.255",
+    "ip": "192.168.1.100",
+    "access_url": "http://192.168.1.100",
+    "ping_enabled": true
+  }
+]
