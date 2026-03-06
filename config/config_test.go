@@ -131,7 +131,7 @@ func TestLoadAndSaveHosts(t *testing.T) {
 
 	// Test saving some hosts
 	testHosts := []config.Host{
-		{ID: "1", Name: "Host 1", MACAddress: "aa:ll:cc:dd:ee:ff"},
+		{ID: "1", Name: "Host 1", MACAddress: "aa:bb:cc:dd:ee:ff"},
 		{ID: "2", Name: "Host 2", MACAddress: "11:22:33:44:55:66"},
 	}
 	config.Hosts = testHosts

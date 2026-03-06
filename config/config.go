@@ -79,7 +79,18 @@ func LoadHosts() {
 	if err := json.Unmarshal(data, &Hosts); err != nil {
 		log.Printf("Error unmarshaling hosts: %v", err)
 		Hosts = []Host{}
+		return
 	}
+
+	validHosts := make([]Host, 0, len(Hosts))
+	for i := range Hosts {
+		if err := ValidateHost(&Hosts[i]); err != nil {
+			log.Printf("Invalid host %s in %s: %v", Hosts[i].ID, HostsFile, err)
+			continue
+		}
+		validHosts = append(validHosts, Hosts[i])
+	}
+	Hosts = validHosts
 }
 
 func SaveHosts() error {
