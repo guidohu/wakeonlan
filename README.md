@@ -114,4 +114,4 @@ The Go backend serves a simple REST API on `/api/hosts`.
 
 ## License
 
-This project is free to use and modify.
+MIT
