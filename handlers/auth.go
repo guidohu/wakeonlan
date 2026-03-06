@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -76,7 +77,10 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Username != config.AdminUser || req.Password != config.AdminPassword {
+	userMatch := subtle.ConstantTimeCompare([]byte(req.Username), []byte(config.AdminUser))
+	passMatch := subtle.ConstantTimeCompare([]byte(req.Password), []byte(config.AdminPassword))
+
+	if userMatch == 0 || passMatch == 0 {
 		loginAttemptsMu.Lock()
 		loginAttempts[ip]++
 		loginLastSeen[ip] = time.Now()
