@@ -166,10 +166,12 @@ func HandleHostPing(w http.ResponseWriter, r *http.Request) {
 	err := cmd.Run()
 
 	if err != nil {
+		log.Printf("Ping %s: failed (%v)", target.IP, err)
 		w.Write([]byte(`{"success": false}`))
 		return
 	}
 
+	log.Printf("Ping %s: success", target.IP)
 	w.Write([]byte(`{"success": true}`))
 }
 
