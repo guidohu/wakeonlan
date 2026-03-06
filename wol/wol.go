@@ -51,12 +51,12 @@ func SendWOL(mac string, broadcastIP string) error {
 		return err
 	}
 
-	conn, err := net.DialUDP("udp", nil, addr)
+	conn, err := net.ListenUDP("udp", nil)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	_, err = conn.Write(packet)
+	_, err = conn.WriteTo(packet, addr)
 	return err
 }

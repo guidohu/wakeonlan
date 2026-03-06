@@ -38,8 +38,11 @@ func LoadHosts() {
 	data, err := os.ReadFile(HostsFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Printf("Hosts file does not exist at %s, starting with empty list", HostsFile)
+			log.Printf("Hosts file does not exist at %s, creating an empty one", HostsFile)
 			Hosts = []Host{}
+			if err := os.WriteFile(HostsFile, []byte("[]\n"), 0644); err != nil {
+				log.Printf("Error creating empty hosts file: %v", err)
+			}
 			return
 		}
 		log.Printf("Error reading hosts file: %v", err)
