@@ -13,6 +13,9 @@ RUN go build -o wakeonlan main.go
 FROM alpine:latest
 
 RUN addgroup -S wakeonlan && adduser -S wakeonlan -G wakeonlan
+RUN apk add --no-cache iputils
+# Grant the binary permission to use raw sockets even for non-root users
+RUN setcap cap_net_raw+ep /bin/ping || setcap cap_net_raw+ep /usr/bin/ping
 
 WORKDIR /app
 
