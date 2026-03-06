@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -27,7 +28,32 @@ var (
 	Hosts     []Host
 	HostsFile = "hosts.json"
 	HostsMu   sync.Mutex
+
+	AdminUser     string
+	AdminPassword string
+	JWTSecret     []byte
 )
+
+func init() {
+	AdminUser = os.Getenv("ADMIN_USER")
+	if AdminUser == "" {
+		AdminUser = "admin"
+	}
+	AdminPassword = os.Getenv("ADMIN_PASSWORD")
+	if AdminPassword == "" {
+		AdminPassword = "admin"
+	}
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		b := make([]byte, 32)
+		if _, err := rand.Read(b); err != nil {
+			log.Fatalf("failed to generate random JWT secret: %v", err)
+		}
+		JWTSecret = b
+	} else {
+		JWTSecret = []byte(secret)
+	}
+}
 
 func LoadHosts() {
 	HostsMu.Lock()
@@ -92,6 +118,9 @@ func ValidateHost(host *Host) error {
 		u, err := url.ParseRequestURI(host.AccessURL)
 		if err != nil || u.Scheme == "" || u.Host == "" {
 			return fmt.Errorf("invalid access URL")
+		}
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return fmt.Errorf("invalid access URL scheme: must be http or https")
 		}
 	}
 

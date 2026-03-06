@@ -22,7 +22,10 @@ func main() {
 
 	r.NoRoute(gin.WrapH(http.FileServer(http.Dir("./static"))))
 
+	r.POST("/api/login", gin.WrapF(handlers.HandleLogin))
+
 	api := r.Group("/api")
+	api.Use(handlers.AuthMiddleware())
 	{
 		api.GET("/hosts", gin.WrapF(handlers.HandleHosts))
 		api.POST("/hosts", gin.WrapF(handlers.HandleHosts))

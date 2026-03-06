@@ -58,11 +58,20 @@ func TestValidateHost(t *testing.T) {
 			wantError: true,
 		},
 		{
-			name: "Invalid URL",
+			name: "Invalid URL (Not a URL)",
 			host: config.Host{
 				Name:       "Invalid URL",
 				MACAddress: "aa:bb:cc:dd:ee:ff",
 				AccessURL:  "not a url",
+			},
+			wantError: true,
+		},
+		{
+			name: "Invalid URL (XSS javascript:)",
+			host: config.Host{
+				Name:       "XSS URL",
+				MACAddress: "aa:bb:cc:dd:ee:ff",
+				AccessURL:  "javascript:alert(1)",
 			},
 			wantError: true,
 		},

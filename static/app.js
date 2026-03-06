@@ -10,6 +10,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const toastContainer = document.getElementById('toast-container');
     const masterToggleCheckbox = document.getElementById('master-ping-enabled');
 
+    let authToken = localStorage.getItem('wakeonlan_token');
+    const loginModalOverlay = document.getElementById('login-modal-overlay');
+    const loginForm = document.getElementById('login-form');
+
+    const showLogin = () => {
+        loginModalOverlay.classList.remove('hidden');
+        document.getElementById('login-username').focus();
+    };
+
+    const hideLogin = () => {
+        loginModalOverlay.classList.add('hidden');
+    };
+
+    const apiFetch = async (url, options = {}) => {
+        if (!options.headers) options.headers = {};
+        if (authToken) {
+            options.headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        const res = await fetch(url, options);
+        if (res.status === 401 || res.status === 403) {
+            authToken = null;
+            localStorage.removeItem('wakeonlan_token');
+            showLogin();
+            throw new Error('Session expired or unauthorized');
+        }
+        return res;
+    };
+
     // Form Toggle
     const toggleForm = () => {
         modalOverlay.classList.toggle('hidden');
@@ -59,13 +87,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Render Host Card
+    const getSafeURL = (urlStr) => {
+        if (!urlStr) return '#';
+        try {
+            const parsed = new URL(urlStr);
+            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                return urlStr;
+            }
+        } catch (e) {
+            // Invalid URL
+        }
+        return '#';
+    };
+
     const createHostCard = (host) => {
         const card = document.createElement('div');
         card.className = 'host-card glass-panel';
         card.dataset.id = host.id;
 
+        const safeUrl = getSafeURL(host.access_url);
+
         const titleHtml = host.access_url
-            ? `<h3><a href="${escapeHTML(host.access_url)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">${escapeHTML(host.name)} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></h3>`
+            ? `<h3><a href="${escapeHTML(safeUrl)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">${escapeHTML(host.name)} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a></h3>`
             : `<h3>${escapeHTML(host.name)}</h3>`;
 
         card.innerHTML = `
@@ -119,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load Hosts
     let loadHosts = async () => {
         try {
-            const res = await fetch(`${apiBase}?t=${new Date().getTime()}`, {
+            const res = await apiFetch(`${apiBase}?t=${new Date().getTime()}`, {
                 cache: 'no-store',
                 headers: {
                     'Cache-Control': 'no-cache',
@@ -146,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.startPing = (host) => {
                 if (window.pingIntervals[host.id]) clearInterval(window.pingIntervals[host.id]);
                 window.pingIntervals[host.id] = setInterval(() => {
-                    fetch(`${apiBase}/${host.id}/ping`)
+                    apiFetch(`${apiBase}/${host.id}/ping`)
                         .then(r => r.json())
                         .then(data => {
                             if (!data.success && data.error === "Ping disabled") return;
@@ -204,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = editingId ? `${apiBase}/${editingId}` : apiBase;
 
         try {
-            const res = await fetch(url, {
+            const res = await apiFetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newHost)
@@ -259,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnElement.disabled = true;
 
         try {
-            const res = await fetch(`${apiBase}/${id}/wake`, { method: 'POST' });
+            const res = await apiFetch(`${apiBase}/${id}/wake`, { method: 'POST' });
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text || 'Failed to send WOL');
@@ -302,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const res = await fetch(`${apiBase}/${id}`, {
+            const res = await apiFetch(`${apiBase}/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(host)
@@ -338,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.transform = 'scale(0.95)';
 
         try {
-            const res = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${apiBase}/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete host');
 
             showToast('Host deleted');
@@ -385,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Send concurrent requests for responsiveness, though a mass-update endpoint would be better
                 await Promise.all(currentHosts.map(host =>
-                    fetch(`${apiBase}/${host.id}`, {
+                    apiFetch(`${apiBase}/${host.id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(host)
@@ -416,6 +459,43 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMasterToggleState();
     };
 
-    // Initial load
-    loadHosts();
+    // Initial logic
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const btn = loginForm.querySelector('button');
+        const origText = btn.textContent;
+        btn.textContent = 'Logging in...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!res.ok) throw new Error('Invalid credentials');
+
+            const data = await res.json();
+            authToken = data.token;
+            localStorage.setItem('wakeonlan_token', authToken);
+            hideLogin();
+            showToast('Logged in successfully');
+            loginForm.reset();
+            loadHosts();
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            btn.textContent = origText;
+            btn.disabled = false;
+        }
+    });
+
+    if (!authToken) {
+        showLogin();
+    } else {
+        loadHosts();
+    }
 });

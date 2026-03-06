@@ -92,6 +92,26 @@
         </section>
     </div>
 
+    <!-- Login Modal Overlay -->
+    <div class="modal-overlay hidden" id="login-modal-overlay" style="z-index: 2000;">
+        <section class="add-host-panel glass-panel" id="login-panel" style="max-width: 400px; margin: 15% auto;">
+            <div class="panel-header">
+                <h2>Login</h2>
+            </div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn primary-btn w-full">Login</button>
+            </form>
+        </section>
+    </div>
+
     <!-- Toast Notification Container -->
     <div class="toast-container" id="toast-container"></div>
 

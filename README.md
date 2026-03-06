@@ -48,6 +48,8 @@ This is the easiest way to deploy the application and ensures that your `hosts.j
        environment:
          - PORT=8080
          - HOSTS_FILE=/data/hosts.json
+         - ADMIN_USER=admin
+         - ADMIN_PASSWORD=adminpassword
        volumes:
          - ./hosts.json:/data/hosts.json
        cap_add:
@@ -89,6 +91,9 @@ You can configure the application using environment variables:
 
 - `PORT`: Sets the port for the web server (Default: `8080`).
 - `HOSTS_FILE`: Absolute or relative path to the persistent JSON file storing the hosts (Default: `hosts.json` locally or `/data/hosts.json` inside the Docker container).
+- `ADMIN_USER`: The username for the web interface login (Default: `admin`).
+- `ADMIN_PASSWORD`: The password for the web interface login (Default: `admin`).
+- `JWT_SECRET`: A custom secret key to sign JWT tokens. If not provided, a secure random key is generated on startup.
 
 ## Managing Hosts
 
@@ -105,6 +110,7 @@ When you click the **+ (Add Host)** button in the UI, you can provide the follow
 
 The Go backend serves a simple REST API on `/api/hosts`.
 
+- `POST /api/login` - Authenticate and receive a JWT token.
 - `GET /api/hosts` - Retrieve all host records.
 - `POST /api/hosts` - Create a new host record.
 - `PUT /api/hosts/:id` - Edit an existing host record.
