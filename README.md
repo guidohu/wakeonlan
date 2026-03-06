@@ -41,24 +41,32 @@ This is the easiest way to deploy the application and ensures that your `hosts.j
      wakeonlan:
        build: .
        container_name: wakeonlan
-       # Not using host networking; instead exposing port 8080 on localhost to the host machine.
        # Note: On Docker Desktop for Mac/Windows, UDP broadcasts may still not reach the physical LAN.
-       ports:
-         - "127.0.0.1:8080:8080"
+       # ports:
+       #   - "127.0.0.1:8080:8080"
+       network_mode: "host"
        environment:
          - PORT=8080
          - HOSTS_FILE=/data/hosts.json
        volumes:
          - ./hosts.json:/data/hosts.json
+       cap_add:
+         - NET_ADMIN
+         - NET_RAW
        restart: unless-stopped
    ```
+
+   **Why `network_mode: "host"` and `cap_add`?**
+   - **Host Network (`network_mode: "host"`)**: Running the container on the host network is necessary so that Wake-on-LAN UDP broadcast packets can reach your physical local network. Without it, broadcasts are isolated to Docker's internal bridged network.
+   - **Network Capabilities (`NET_ADMIN`, `NET_RAW`)**: These capabilities grant the container elevated permissions to send raw network packets. This is required for the application's ICMP ping feature to successfully check if your devices are currently online.
+
 3. Start the container:
    ```bash
    docker compose up -d
    ```
-4. Access the web interface at: `http://localhost:8080`
+4. Access the web interface at: `http://localhost:8080` (or your Docker host's IP address).
 
-*Note: For macOS or Windows using Docker Desktop, broadcast packets might not reach the physical network depending on network constraints. Host networking might be required on Linux. We've mapped port `8080` by default.*
+*Note: On Docker Desktop for Mac or Windows, true host networking is not supported. You may need to uncomment the `ports` mapping to access the web interface, and UDP broadcasts might still not reach the physical LAN.*
 
 ### Running Locally (Development)
 
