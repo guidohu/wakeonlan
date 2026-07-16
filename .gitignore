@@ -30,3 +30,7 @@ docker-compose.yml
 
 # Application config
 hosts.json
+
+# Jules
+.jules/
+.Jules/
