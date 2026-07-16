@@ -29,11 +29,11 @@
                     <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">Monitoring
                         (All)</span>
                     <label class="switch">
-                        <input type="checkbox" id="master-ping-enabled" checked>
+                        <input type="checkbox" id="master-ping-enabled" checked aria-label="Toggle monitoring for all devices">
                         <span class="slider round success-toggle"></span>
                     </label>
                 </div>
-                <button class="btn btn-icon outline-btn" id="toggle-form-btn" title="Add Host">
+                <button class="btn btn-icon outline-btn" id="toggle-form-btn" title="Add Host" aria-label="Add Host">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14m-7-7h14" />
                     </svg>
@@ -54,7 +54,7 @@
         <section class="add-host-panel glass-panel" id="add-host-panel">
             <div class="panel-header">
                 <h2 id="modal-title">Add New Host</h2>
-                <button class="close-btn" id="close-form-btn">&times;</button>
+                <button class="close-btn" id="close-form-btn" aria-label="Close">&times;</button>
             </div>
             <form id="add-host-form">
                 <div class="input-group">
