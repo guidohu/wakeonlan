@@ -210,9 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 1000);
             };
 
+            const fragment = document.createDocumentFragment();
             hosts.forEach(host => {
-                hostsContainer.appendChild(createHostCard(host));
+                fragment.appendChild(createHostCard(host));
+            });
+            hostsContainer.appendChild(fragment);
 
+            hosts.forEach(host => {
                 if (host.ip && host.ping_enabled) {
                     window.startPing(host);
                 }
@@ -426,14 +430,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Update backend for all hosts
             try {
-                // Send concurrent requests for responsiveness, though a mass-update endpoint would be better
-                await Promise.all(currentHosts.map(host =>
-                    apiFetch(`${apiBase}/${host.id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(host)
-                    })
-                ));
+                await apiFetch(apiBase, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentHosts)
+                });
                 showToast(isEnabled ? 'Monitoring enabled for all devices' : 'Monitoring disabled for all devices');
             } catch (err) {
                 showToast('Failed to update some monitoring states', 'error');

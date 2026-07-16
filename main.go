@@ -29,6 +29,7 @@ func main() {
 	{
 		api.GET("/hosts", gin.WrapF(handlers.HandleHosts))
 		api.POST("/hosts", gin.WrapF(handlers.HandleHosts))
+		api.PUT("/hosts", gin.WrapF(handlers.HandleHosts))
 		api.DELETE("/hosts/:id", gin.WrapF(handlers.HandleHostDelete))
 		api.POST("/hosts/:id/wake", gin.WrapF(handlers.HandleHostWake))
 		api.GET("/hosts/:id/ping", gin.WrapF(handlers.HandleHostPing))

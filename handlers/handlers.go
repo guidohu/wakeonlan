@@ -48,6 +48,46 @@ func HandleHosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method == http.MethodPut {
+		var updateHosts []config.Host
+		if err := json.NewDecoder(r.Body).Decode(&updateHosts); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		for i := range updateHosts {
+			if err := config.ValidateHost(&updateHosts[i]); err != nil {
+				http.Error(w, fmt.Sprintf("Invalid host data for %s: %v", updateHosts[i].Name, err), http.StatusBadRequest)
+				return
+			}
+		}
+
+		config.HostsMu.Lock()
+		// Update existing hosts with the new data from the array
+		// For safety, only update the ones we already have by matching ID
+		for _, updatedHost := range updateHosts {
+			for i, h := range config.Hosts {
+				if h.ID == updatedHost.ID {
+					config.Hosts[i].Name = updatedHost.Name
+					config.Hosts[i].MACAddress = updatedHost.MACAddress
+					config.Hosts[i].BroadcastIP = updatedHost.BroadcastIP
+					config.Hosts[i].IP = updatedHost.IP
+					config.Hosts[i].AccessURL = updatedHost.AccessURL
+					config.Hosts[i].PingEnabled = updatedHost.PingEnabled
+					break
+				}
+			}
+		}
+
+		config.SaveHosts()
+		config.HostsMu.Unlock()
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "updated"}`))
+		return
+	}
+
 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }
 
