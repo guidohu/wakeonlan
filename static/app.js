@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg> Edit
                 </button>
-                <button class="btn danger-btn" onclick="deleteHost('${host.id}', this)" title="Delete">
+                <button class="btn danger-btn" onclick="deleteHost('${host.id}', this)" title="Delete" aria-label="Delete ${escapeHTML(host.name)}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom;">
                         <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
                     </svg>
@@ -154,9 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const escapeHTML = (str) => {
-        const p = document.createElement('p');
-        p.appendChild(document.createTextNode(str));
-        return p.innerHTML;
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     };
 
     // Load Hosts
