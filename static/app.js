@@ -154,9 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const escapeHTML = (str) => {
-        const p = document.createElement('p');
-        p.appendChild(document.createTextNode(str));
-        return p.innerHTML;
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     };
 
     // Load Hosts
