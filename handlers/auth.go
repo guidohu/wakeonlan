@@ -43,8 +43,11 @@ func getClientIP(r *http.Request) string {
 			ip = ip[:colonIdx]
 		}
 	} else {
-		if commaIdx := strings.Index(ip, ","); commaIdx != -1 {
-			ip = ip[:commaIdx]
+		// X-Forwarded-For can contain multiple IPs.
+		// The right-most IP is the one appended by the last proxy.
+		// If multiple IPs are present, we should split and take the last one.
+		if commaIdx := strings.LastIndex(ip, ","); commaIdx != -1 {
+			ip = ip[commaIdx+1:]
 		}
 	}
 	return strings.TrimSpace(ip)
