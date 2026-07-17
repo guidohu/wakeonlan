@@ -51,7 +51,7 @@
 
     <!-- Modal Overlay -->
     <div class="modal-overlay hidden" id="modal-overlay">
-        <section class="add-host-panel glass-panel" id="add-host-panel">
+        <section class="add-host-panel glass-panel" id="add-host-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="panel-header">
                 <h2 id="modal-title">Add New Host</h2>
                 <button class="close-btn" id="close-form-btn" aria-label="Close">&times;</button>
@@ -94,9 +94,9 @@
 
     <!-- Login Modal Overlay -->
     <div class="modal-overlay hidden" id="login-modal-overlay" style="z-index: 2000;">
-        <section class="add-host-panel glass-panel" id="login-panel" style="max-width: 400px; margin: 15% auto;">
+        <section class="add-host-panel glass-panel" id="login-panel" style="max-width: 400px; margin: 15% auto;" role="dialog" aria-modal="true" aria-labelledby="login-title">
             <div class="panel-header">
-                <h2>Login</h2>
+                <h2 id="login-title">Login</h2>
             </div>
             <form id="login-form">
                 <div class="input-group">
