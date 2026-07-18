@@ -33,19 +33,12 @@ var (
 )
 
 func getClientIP(r *http.Request) string {
-	ip := r.Header.Get("X-Real-IP")
-	if ip == "" {
-		ip = r.Header.Get("X-Forwarded-For")
-	}
-	if ip == "" {
-		ip = r.RemoteAddr
-		if colonIdx := strings.LastIndex(ip, ":"); colonIdx != -1 {
-			ip = ip[:colonIdx]
-		}
-	} else {
-		if commaIdx := strings.Index(ip, ","); commaIdx != -1 {
-			ip = ip[:commaIdx]
-		}
+	// SECURITY: Never trust X-Forwarded-For or X-Real-IP without a trusted proxy
+	// By default, only use the reliable network layer IP to prevent spoofing
+	// which bypasses rate limiting.
+	ip := r.RemoteAddr
+	if colonIdx := strings.LastIndex(ip, ":"); colonIdx != -1 {
+		ip = ip[:colonIdx]
 	}
 	return strings.TrimSpace(ip)
 }
