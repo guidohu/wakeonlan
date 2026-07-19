@@ -7,11 +7,6 @@ import (
 )
 
 // ParseMAC parses a MAC address string into a 6-byte array.
-// Performance Optimization (Bolt):
-// 💡 What: Replaced chained strings.ReplaceAll and fmt.Sscanf with a single manual character scan and hex.Decode.
-// 🎯 Why: Original implementation was a string-parsing anti-pattern doing heavy heap allocation and reflection loops (~3385 ns/op, 26 allocs/op).
-// 📊 Impact: ~55x faster, 0 heap allocations for cleaning string (~61 ns/op, 1 alloc/op).
-// 🔬 Measurement: Verified with go test -bench=. -benchmem
 func ParseMAC(mac string) ([]byte, error) {
 	var clean [12]byte
 	var count int
