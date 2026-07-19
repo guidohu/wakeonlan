@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -32,22 +33,51 @@ var (
 	blockDuration   = 15 * time.Minute
 )
 
+func isTrustedProxy(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+	for _, cidr := range config.TrustedProxies {
+		if cidr.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
 func getClientIP(r *http.Request) string {
-	ip := r.Header.Get("X-Real-IP")
-	if ip == "" {
-		ip = r.Header.Get("X-Forwarded-For")
+	remoteIPStr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		remoteIPStr = r.RemoteAddr
 	}
-	if ip == "" {
-		ip = r.RemoteAddr
-		if colonIdx := strings.LastIndex(ip, ":"); colonIdx != -1 {
-			ip = ip[:colonIdx]
-		}
-	} else {
-		if commaIdx := strings.Index(ip, ","); commaIdx != -1 {
-			ip = ip[:commaIdx]
+	remoteIP := net.ParseIP(remoteIPStr)
+
+	if !isTrustedProxy(remoteIP) {
+		return strings.TrimSpace(remoteIPStr)
+	}
+
+	xff := r.Header.Get("X-Forwarded-For")
+	if xff != "" {
+		ips := strings.Split(xff, ",")
+		for i := len(ips) - 1; i >= 0; i-- {
+			ipStr := strings.TrimSpace(ips[i])
+			ip := net.ParseIP(ipStr)
+			if ip != nil && !isTrustedProxy(ip) {
+				return ipStr
+			}
 		}
 	}
-	return strings.TrimSpace(ip)
+
+	xri := r.Header.Get("X-Real-IP")
+	if xri != "" {
+		ipStr := strings.TrimSpace(xri)
+		ip := net.ParseIP(ipStr)
+		if ip != nil && !isTrustedProxy(ip) {
+			return ipStr
+		}
+	}
+
+	return strings.TrimSpace(remoteIPStr)
 }
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
