@@ -29,12 +29,42 @@ var (
 	HostsFile = "hosts.json"
 	HostsMu   sync.Mutex
 
-	AdminUser     string
-	AdminPassword string
-	JWTSecret     []byte
+	AdminUser      string
+	AdminPassword  string
+	JWTSecret      []byte
+	TrustedProxies []*net.IPNet
 )
 
 func init() {
+	proxiesStr := os.Getenv("TRUSTED_PROXIES")
+	if proxiesStr != "" {
+		for _, p := range strings.Split(proxiesStr, ",") {
+			p = strings.TrimSpace(p)
+			if p == "" {
+				continue
+			}
+			if !strings.Contains(p, "/") {
+				if strings.Contains(p, ":") {
+					p = p + "/128"
+				} else {
+					p = p + "/32"
+				}
+			}
+			_, cidr, err := net.ParseCIDR(p)
+			if err == nil {
+				TrustedProxies = append(TrustedProxies, cidr)
+			} else {
+				log.Printf("Failed to parse trusted proxy %s: %v", p, err)
+			}
+		}
+	} else {
+		// Default to local/private networks to prevent DoS from reverse proxy setups
+		for _, p := range []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "::1/128"} {
+			_, cidr, _ := net.ParseCIDR(p)
+			TrustedProxies = append(TrustedProxies, cidr)
+		}
+	}
+
 	AdminUser = os.Getenv("ADMIN_USER")
 	if AdminUser == "" {
 		AdminUser = "admin"
