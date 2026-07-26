@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;" title="Toggle Monitoring">
                         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Monitoring</span>
                         <label class="switch">
-                            <input type="checkbox" onchange="toggleMonitoring('${host.id}', this)" ${host.ping_enabled ? 'checked' : ''}>
+                            <input type="checkbox" onchange="toggleMonitoring('${host.id}', this)" ${host.ping_enabled ? 'checked' : ''} aria-label="Toggle monitoring for ${escapeHTML(host.name)}">
                             <span class="slider round success-toggle"></span>
                         </label>
                     </div>` : ''}
