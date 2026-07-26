@@ -17,7 +17,6 @@ func ParseMAC(mac string) ([]byte, error) {
 		return nil, fmt.Errorf("invalid MAC address length")
 	}
 
-	// OPTIMIZATION: hex.DecodeString is ~10x faster than iterating with fmt.Sscanf
 	return hex.DecodeString(mac)
 }
 
