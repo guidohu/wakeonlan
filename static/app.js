@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update backend for all hosts
             try {
                 await apiFetch(apiBase, {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentHosts)
                 });
