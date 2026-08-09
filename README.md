@@ -53,7 +53,6 @@ This is the easiest way to deploy the application and ensures that your `hosts.j
        volumes:
          - ./hosts.json:/data/hosts.json
        cap_add:
-         - NET_ADMIN
          - NET_RAW
        restart: unless-stopped
    ```
