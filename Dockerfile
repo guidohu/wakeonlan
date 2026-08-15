@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -10,7 +10,7 @@ COPY . .
 RUN go build -o wakeonlan main.go
 
 # Production stage
-FROM alpine:latest
+FROM alpine:3.22
 
 RUN addgroup -S wakeonlan && adduser -S wakeonlan -G wakeonlan
 RUN apk add --no-cache iputils libcap
